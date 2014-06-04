@@ -187,7 +187,7 @@ public class HttpClient {
 		HashMap<String, String> map = new HashMap<String, String>();
 		
 		map.putAll(this.globalHeaders);
-		if(!headers.equals(null)){
+		if(headers != null){
 			map.putAll(headers);
 		}
 		
