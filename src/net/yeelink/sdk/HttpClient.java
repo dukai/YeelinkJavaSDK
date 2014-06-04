@@ -26,6 +26,7 @@ public class HttpClient {
 	private HttpURLConnection conn = null;
 	private int statusCode = 0;
 	private String responseContent = "";
+	private HashMap<String, String> globalHeaders = new HashMap<String, String>();
 	/**
 	 * get status code
 	 * @return
@@ -41,9 +42,13 @@ public class HttpClient {
 		return this.responseContent;
 	}
 	
-	public void httpGet(String urlString, HashMap<String, String> headers, String method){
+	public void addHeader(String key, String val){
+		this.globalHeaders.put(key, val);
+	}
+	
+	public void httpGet(String url, HashMap<String, String> headers, String method){
 		try {
-			conn = this.getConnection(urlString);
+			conn = this.getConnection(url);
 			conn.setRequestMethod(method);
 			this.setHeaders(conn, headers);
 			statusCode = conn.getResponseCode();
@@ -95,28 +100,39 @@ public class HttpClient {
 		}
 	}
 
-	public void get(String urlString, HashMap<String, String> headers) {
-		this.httpGet(urlString, headers, REQUEST_METHOD_GET);
+	public void get(String url, HashMap<String, String> headers) {
+		this.httpGet(url, headers, REQUEST_METHOD_GET);
 	}
 	
-	public void delete(String urlString, HashMap<String, String> headers) {
-		this.httpGet(urlString, headers, REQUEST_METHOD_DELETE);
+	public void get(String url){
+		this.httpGet(url, null, REQUEST_METHOD_GET);
 	}
 	
-	public void post(String url, HashMap<String, String> headers, byte[] postContent){
+	public void delete(String url, HashMap<String, String> headers) {
+		this.httpGet(url, headers, REQUEST_METHOD_DELETE);
+	}
+	public void delete(String url){
+		this.httpGet(url, null, REQUEST_METHOD_DELETE);
+	}
+	
+	public void post(String url, byte[] postContent, HashMap<String, String> headers){
 		httpPost(url, headers, postContent, REQUEST_METHOD_POST);
 	}
 	/**
-	 * 上传字符串内容
+	 * post content string
 	 * @param url
-	 * @param headers
 	 * @param postContent
+	 * @param headers
 	 */
-	public void post(String url, HashMap<String, String> headers, String postContent){
-		this.post(url, headers, postContent.getBytes());
+	public void post(String url, String postContent, HashMap<String, String> headers){
+		this.post(url, postContent.getBytes(), headers);
 	}
 	
-	public void post(String url, HashMap<String, String> headers, File file){
+	public void post(String url, String postContent){
+		this.post(url, postContent, null);
+	}
+	
+	public void post(String url, File file, HashMap<String, String> headers){
 		try {
 			FileInputStream fin = new FileInputStream(file);
 			BufferedInputStream bis = new BufferedInputStream(fin);
@@ -125,7 +141,7 @@ public class HttpClient {
 			while((signal = bis.read()) != -1){
 				bais.write(signal);
 			}
-			this.post(url, headers, bais.toByteArray());
+			this.post(url, bais.toByteArray(), headers);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -135,17 +151,25 @@ public class HttpClient {
 		}
 	}
 	
+	public void post(String url, File file){
+		this.post(url, file, null);
+	}
 	
-	public void put(String url, HashMap<String, String> headers, byte[] postContent){
+	
+	public void put(String url, byte[] postContent, HashMap<String, String> headers){
 		httpPost(url, headers, postContent, REQUEST_METHOD_POST);
 	}
 	
-	public void put(String url, HashMap<String, String> headers, String postContent){
-		put(url, headers, postContent.getBytes());
+	public void put(String url, String postContent, HashMap<String, String> headers){
+		put(url, postContent.getBytes(), headers);
+	}
+	
+	public void put(String url, String postContent){
+		put(url, postContent.getBytes(), null);
 	}
 	
 	/**
-	 * 获取连接
+	 * get url connection
 	 * @param url
 	 * @return
 	 * @throws MalformedURLException
@@ -155,12 +179,19 @@ public class HttpClient {
 		return (HttpURLConnection) new URL(url).openConnection();
 	}
 	/**
-	 * 设置headers
+	 * set headers
 	 * @param conn
 	 * @param headers
 	 */
 	private void setHeaders(HttpURLConnection conn, HashMap<String, String> headers){
-		Iterator<?> it = headers.entrySet().iterator();
+		HashMap<String, String> map = new HashMap<String, String>();
+		
+		map.putAll(this.globalHeaders);
+		if(!headers.equals(null)){
+			map.putAll(headers);
+		}
+		
+		Iterator<?> it = map.entrySet().iterator();
 
 		while (it.hasNext()) {
 			@SuppressWarnings("unchecked")
@@ -173,7 +204,7 @@ public class HttpClient {
 		}
 	}
 	/**
-	 * 读取数据
+	 * read stream to string
 	 * @param in
 	 * @return
 	 */

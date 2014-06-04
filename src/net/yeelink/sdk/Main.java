@@ -18,7 +18,7 @@ public class Main {
 		
 		
 		File foto = new File("C:\\Users\\Administrator\\Pictures\\45fd27285ef90bde7e84019c81c29938.png");
-		http.post("http://api.yeelink.net/v1.0/device/2714/sensor/17534/photos", headers, foto);
+		http.post("http://api.yeelink.net/v1.0/device/2714/sensor/17534/photos", foto, headers);
 		
 		System.out.println(http.getStatusCode());
 		System.out.println(http.getResponseContent());
