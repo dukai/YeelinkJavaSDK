@@ -1,7 +1,5 @@
 package net.yeelink.sdk;
 
-import java.io.File;
-import java.util.HashMap;
 
 public class Main {
 
